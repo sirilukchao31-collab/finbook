@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FinanceBook v2.0</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>฿</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+.dark{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2233;--bg4:#1e2a3a;--text1:#f0f2f8;--text2:#8899b0;--text3:#4a5a70;--border:#1e2d40;--card:#111827;--input:#0a0f1a;--hover:#1a2233}
+.light{--bg:#f4f6fb;--bg2:#ffffff;--bg3:#eef1f8;--bg4:#e4e8f4;--text1:#1a2233;--text2:#5a6a80;--text3:#aab0c0;--border:#d0d8e8;--card:#ffffff;--input:#f4f6fb;--hover:#eef1f8}
+body.dark{background:var(--bg);color:var(--text1)}
+body.light{background:var(--bg);color:var(--text1)}
+:root{--teal:#00c9a7;--gold:#f0b429;--red:#ff5e7a;--blue:#0084ff}
+.layout{display:flex;min-height:100vh;background:var(--bg)}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:1.5rem 0;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.sidebar-logo{padding:0 1.25rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.brand{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text1)}
+.uname{font-size:.78rem;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00c9a7,#0084ff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;margin-bottom:.6rem;color:#fff}
+.nav-item{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;color:var(--text2);font-size:.88rem;transition:all .15s;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{color:var(--text1);background:var(--hover)}
+.nav-item.active{color:#00c9a7;background:var(--bg3);border-left-color:#00c9a7}
+.sidebar-bottom{margin-top:auto;padding:1rem 0;border-top:1px solid var(--border)}
+.logout-btn{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;cursor:pointer;color:#ff5e7a;font-size:.88rem;width:100%;background:none;border:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.logout-btn:hover{background:var(--hover)}
+.theme-btn{display:flex;align-items:center;gap:10px;padding:.55rem 1.25rem;cursor:pointer;color:var(--text2);font-size:.83rem;width:100%;background:none;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;margin-bottom:.25rem}
+.theme-btn:hover{color:var(--text1);background:var(--hover)}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#ff5e7a;display:inline-block;margin-left:auto}
+.main{flex:1;overflow-y:auto;padding:1.75rem}
+.page-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--text1);margin-bottom:1.5rem}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem}
+.stat-card .lbl{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.val{font-family:'DM Mono',monospace;font-size:1.25rem;font-weight:500}
+.val.inc{color:#00c9a7}.val.exp{color:#ff5e7a}.val.bal{color:#f0b429}
+.delta{font-size:.73rem;margin-top:.25rem;color:var(--text3)}
+.chart-row{display:grid;grid-template-columns:1.6fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem}
+.card h3{font-size:.78rem;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em}
+.tx-list{display:flex;flex-direction:column;gap:.5rem}
+.tx-item{display:flex;align-items:center;gap:.75rem;background:var(--bg3);border-radius:10px;padding:.7rem 1rem;transition:background .15s}
+.tx-item:hover{background:var(--bg4)}
+.tx-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tx-dot.inc{background:#00c9a7}.tx-dot.exp{background:#ff5e7a}
+.tx-info{flex:1;min-width:0}
+.tx-desc{font-size:.88rem;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-meta{font-size:.73rem;color:var(--text2);margin-top:1px}
+.tx-amount{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;flex-shrink:0}
+.tx-amount.inc{color:#00c9a7}.tx-amount.exp{color:#ff5e7a}
+.tx-actions{display:flex;gap:.4rem;opacity:0;transition:opacity .15s}
+.tx-item:hover .tx-actions{opacity:1}
+.abn{background:none;border:1px solid var(--border);color:var(--text2);border-radius:6px;cursor:pointer;font-size:.72rem;padding:3px 8px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.abn:hover{background:var(--border);color:var(--text1)}
+.abn.del:hover{background:rgba(255,94,122,.15);color:#ff5e7a;border-color:#ff5e7a}
+.add-form{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1.25rem}
+.form-title{font-size:.83rem;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.field label{font-size:.78rem;color:var(--text2);display:block;margin-bottom:.35rem}
+.field input,.field select{width:100%;background:var(--input);border:1px solid var(--border);border-radius:8px;color:var(--text1);padding:.6rem .8rem;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:#00c9a7}
+.field select option{background:var(--bg2)}
+.type-toggle{display:flex;gap:.5rem;margin-bottom:.75rem}
+.type-btn{flex:1;padding:.55rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .15s}
+.type-btn.act-inc{background:rgba(0,201,167,.1);border-color:#00c9a7;color:#00c9a7}
+.type-btn.act-exp{background:rgba(255,94,122,.1);border-color:#ff5e7a;color:#ff5e7a}
+.submit-btn{width:100%;padding:.7rem;border-radius:10px;background:#00c9a7;color:#001a16;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;transition:all .2s;margin-top:.25rem}
+.submit-btn:hover{background:#00e5c4}
+.cancel-btn{padding:.7rem 1rem;background:var(--bg3);color:var(--text1);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;white-space:nowrap}
+.filter-row{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap}
+.filter-row input,.filter-row select{background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text1);padding:.5rem .8rem;font-family:'DM Sans',sans-serif;font-size:.83rem;outline:none}
+.filter-row input:focus,.filter-row select:focus{border-color:#00c9a7}
+.alert-banner{background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.35);border-radius:10px;padding:.75rem 1rem;margin-bottom:.75rem;display:flex;align-items:flex-start;gap:.6rem}
+.ab-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.ab-msg{font-size:.82rem;color:#f0b429;line-height:1.5}
+.budget-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
+.bgt-item{background:var(--bg3);border-radius:10px;padding:.9rem 1rem}
+.bgt-label{font-size:.78rem;color:var(--text2);margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center}
+.bgt-bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:.35rem}
+.bgt-bar{height:100%;border-radius:3px;transition:width .3s}
+.bgt-nums{font-size:.72rem;color:var(--text3);font-family:'DM Mono',monospace;display:flex;justify-content:space-between}
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.export-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-align:center}
+.export-card .ex-icon{font-size:2rem;margin-bottom:.75rem}
+.export-card h3{font-size:1rem;color:var(--text1);margin-bottom:.4rem;font-family:'Playfair Display',serif}
+.export-card p{font-size:.8rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.5}
+.export-btn{padding:.65rem 1.5rem;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text1);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .2s}
+.export-btn.csv:hover{border-color:#00c9a7;color:#00c9a7;background:rgba(0,201,167,.05)}
+.export-btn.xml:hover{border-color:#f0b429;color:#f0b429;background:rgba(240,180,41,.05)}
+.bk-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.bk-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text1);margin-bottom:.4rem}
+.bk-card p{font-size:.83rem;color:var(--text2);margin-bottom:1.25rem;line-height:1.6}
+.bk-btn{padding:.65rem 1.4rem;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:500;transition:all .2s;margin-right:.6rem;margin-bottom:.5rem;border:none}
+.bk-btn.primary{background:#00c9a7;color:#001a16}.bk-btn.primary:hover{background:#00e5c4}
+.bk-btn.secondary{background:var(--bg3);color:var(--text1);border:1px solid var(--border)}.bk-btn.secondary:hover{background:var(--bg4)}
+.bk-btn.danger{background:rgba(255,94,122,.1);color:#ff5e7a;border:1px solid #ff5e7a}.bk-btn.danger:hover{background:#ff5e7a;color:#fff}
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:1.2rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-top:.75rem}
+.drop-zone:hover{border-color:#00c9a7}
+.drop-zone p{color:var(--text2);font-size:.83rem}
+.settings-sec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1rem}
+.settings-sec h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text1);margin-bottom:1rem}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:.88rem;color:var(--text1)}
+.setting-sub{font-size:.75rem;color:var(--text2);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;display:inline-block}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.3s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider{background:#00c9a7}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+.curr-badge{display:inline-flex;align-items:center;background:rgba(0,132,255,.1);color:#0084ff;border-radius:6px;padding:2px 8px;font-size:.75rem;font-family:'DM Mono',monospace}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.7rem}
+.badge.inc{background:rgba(0,201,167,.1);color:#00c9a7}
+.badge.exp{background:rgba(255,94,122,.1);color:#ff5e7a}
+.scrollarea{overflow-y:auto;max-height:350px}
+.scrollarea::-webkit-scrollbar{width:4px}
+.scrollarea::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:.88rem}
+.toast{position:fixed;top:20px;right:20px;background:var(--card);border:1px solid #00c9a7;color:#00c9a7;padding:.75rem 1.25rem;border-radius:10px;font-size:.85rem;z-index:9999;animation:sIn .2s;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast.err{border-color:#ff5e7a;color:#ff5e7a}
+.toast.warn{border-color:#f0b429;color:#f0b429}
+@keyframes sIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);position:relative;overflow:hidden}
+.login-wrap::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;border:1px solid var(--border);top:-150px;right:-150px;opacity:.4;pointer-events:none}
+.login-wrap::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;border:1px solid var(--border);bottom:-80px;left:-80px;opacity:.3;pointer-events:none}
+.logo-area{text-align:center;margin-bottom:2.5rem;z-index:1}
+.logo-icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#00c9a7,#0084ff);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;color:#fff;font-family:'DM Mono',monospace;font-weight:700}
+.logo-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--text1);letter-spacing:-.5px}
+.logo-sub{color:var(--text2);font-size:.9rem;margin-top:.35rem}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:360px;max-width:90vw;z-index:1}
+.login-card h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text1);margin-bottom:.5rem}
+.login-card p{color:var(--text2);font-size:.85rem;margin-bottom:1.8rem;line-height:1.7}
+.fb-btn{width:100%;padding:13px;border-radius:12px;background:#1877f2;color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
+.fb-btn:hover{background:#166fe5;transform:translateY(-1px)}
+.divider{height:1px;background:var(--border);margin:1.5rem 0;position:relative}
+.divider span{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--card);padding:0 10px;color:var(--text3);font-size:.75rem}
+.guest-btn{width:100%;padding:12px;border-radius:12px;background:transparent;color:var(--text2);border:1px solid var(--border);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;transition:all .2s}
+.guest-btn:hover{background:var(--hover);color:var(--text1)}
+.theme-corner{position:absolute;top:16px;right:16px;background:none;border:1px solid var(--border);border-radius:8px;padding:7px 11px;cursor:pointer;color:var(--text2);font-size:17px;transition:all .2s;z-index:2}
+.theme-corner:hover{background:var(--hover);color:var(--text1)}
+.tab-row{display:flex;gap:.4rem}
+.tab{padding:.45rem 1rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text2);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tab.active{background:rgba(0,201,167,.1);color:#00c9a7}
+.tab:hover:not(.active){background:var(--hover);color:var(--text1)}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.currency-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text1);padding:.35rem .7rem;font-size:.82rem;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer}
+@media(max-width:700px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;height:auto;flex-direction:row;overflow-x:auto;padding:.5rem;border-right:none;border-bottom:1px solid var(--border);position:static}
+  .sidebar-logo{display:none}.sidebar-bottom{display:none}
+  .nav-item{flex-direction:column;gap:3px;font-size:.65rem;padding:.4rem .6rem;border-left:none;border-bottom:2px solid transparent;white-space:nowrap}
+  .nav-item.active{border-bottom-color:#00c9a7;border-left:none}
+  .main{padding:1rem}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .chart-row,.report-grid,.export-grid,.budget-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body class="dark">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js" crossorigin></script>
+
+<script>
+'use strict';
+var h = React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+var useCallback = React.useCallback;
+
+/* ── Constants ────────────────────────────────── */
+var CATS_INC = ['เงินเดือน','ธุรกิจ','การลงทุน','เงินปันผล','ของขวัญ','รายได้เสริม','อื่นๆ'];
+var CATS_EXP = ['อาหาร','เดินทาง','ที่พัก','บันเทิง','สุขภาพ','ช้อปปิ้ง','สาธารณูปโภค','การศึกษา','ประกัน','ออมเงิน','อื่นๆ'];
+var COLORS = ['#00c9a7','#0084ff','#f0b429','#ff5e7a','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6','#4ade80'];
+var MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+var CURRENCIES = {
+  THB:{sym:'฿',name:'บาท (THB)',rate:1},
+  USD:{sym:'$',name:'ดอลลาร์สหรัฐ (USD)',rate:0.028},
+  EUR:{sym:'€',name:'ยูโร (EUR)',rate:0.026},
+  JPY:{sym:'¥',name:'เยน (JPY)',rate:4.2},
+  GBP:{sym:'£',name:'ปอนด์ (GBP)',rate:0.022},
+  SGD:{sym:'S$',name:'ดอลลาร์สิงคโปร์ (SGD)',rate:0.037}
+};
+
+/* ── Utils ────────────────────────────────────── */
+function fmt(n,c){
+  c=c||'THB';
+  var info=CURRENCIES[c]||CURRENCIES.THB;
+  var v=n*info.rate, d=c==='THB'?0:2;
+  return info.sym+new Intl.NumberFormat('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+}
+function fmtDate(s){var d=new Date(s);return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear()}
+function today(){return new Date().toISOString().slice(0,10)}
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2)}
+function dl(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
+function catMap(txs,type){var m={};txs.forEach(function(t){if(!type||t.type===type)m[t.category]=(m[t.category]||0)+t.amount});return m}
+
+/* ── useLocalStorage ──────────────────────────── */
+function useLs(key,init){
+  var s=useState(function(){try{var r=localStorage.getItem(key);return r?JSON.parse(r):init}catch(e){return init}});
+  var val=s[0],setVal=s[1];
+  var set=useCallback(function(nv){var v=typeof nv==='function'?nv(val):nv;setVal(v);try{localStorage.setItem(key,JSON.stringify(v))}catch(e){}},[key,val]);
+  return[val,set];
+}
+
+/* ── Toast ────────────────────────────────────── */
+function Toast(p){
+  useEffect(function(){var t=setTimeout(p.onDone,3000);return function(){clearTimeout(t)};},[]);
+  return h('div',{className:'toast'+(p.type==='err'?' err':p.type==='warn'?' warn':'')},p.msg);
+}
+
+/* ── Login ────────────────────────────────────── */
+function LoginPage(p){
+  return h('div',{className:'login-wrap'},
+    h('button',{className:'theme-corner',onClick:p.toggleTheme},p.isDark?'☀':'🌙'),
+    h('div',{className:'logo-area'},
+      h('div',{className:'logo-icon'},'฿'),
+      h('div',{className:'logo-title'},'FinanceBook'),
+      h('div',{className:'logo-sub'},'บัญชีส่วนตัว ครบ จบ ในที่เดียว')
+    ),
+    h('div',{className:'login-card'},
+      h('h2',null,'ยินดีต้อนรับ'),
+      h('p',null,'เข้าสู่ระบบเพื่อจัดการรายรับ-รายจ่ายส่วนตัว ข้อมูลทั้งหมดเก็บไว้บนเครื่องคุณเท่านั้น ไม่ส่งไปที่ใด'),
+      h('button',{className:'fb-btn',onClick:function(){p.onLogin({name:'Somchai Jaidee',email:'somchai@email.com',avatar:'SJ',provider:'facebook'})}},
+        h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'white'},h('path',{d:'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'})),
+        'เข้าสู่ระบบด้วย Facebook'
+      ),
+      h('div',{className:'divider'},h('span',null,'หรือ')),
+      h('button',{className:'guest-btn',onClick:function(){p.onLogin({name:'Guest User',email:'guest',avatar:'G',provider:'guest'})}},'ทดลองใช้งาน (Guest)')
+    )
+  );
+}
+
+/* ── Dashboard ────────────────────────────────── */
+var RC=Recharts;
+function Dashboard(p){
+  var txs=p.txs,budgets=p.budgets,curr=p.curr;
+  var inc=txs.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var exp=txs.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  var now=new Date(),monthly={};
+  for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1),k=d.getFullYear()+'-'+d.getMonth();monthly[k]={month:MONTHS[d.getMonth()],income:0,expense:0}}
+  txs.forEach(function(t){var dt=new Date(t.date),k=dt.getFullYear()+'-'+dt.getMonth();if(monthly[k])monthly[k][t.type==='income'?'income':'expense']+=t.amount});
+  var expMap=catMap(txs,'expense');
+  var pieData=Object.entries(expMap).map(function(e){return{name:e[0],value:e[1]}});
+  var alerts=[];
+  Object.entries(budgets).forEach(function(e){var cat=e[0],lim=e[1],spent=expMap[cat]||0;if(lim>0&&spent>=lim)alerts.push('หมวด "'+cat+'" เกิน budget แล้ว!');else if(lim>0&&spent/lim>=0.8)alerts.push('หมวด "'+cat+'" ใกล้เต็ม budget ('+Math.round(spent/lim*100)+'%)')});
+  var recent=txs.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date)}).slice(0,5);
+  var ttStyle={background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 12px',fontSize:11};
+  function CT(q){if(!q.active||!q.payload||!q.payload.length)return null;return h('div',{style:ttStyle},h('p',{style:{color:'var(--text2)',marginBottom:4}},q.label),q.payload.map(function(x,i){return h('p',{key:i,style:{color:x.color}},x.name+': '+fmt(x.value,curr))}))}
+  return h('div',null,
+    h('div',{className:'page-title'},'Dashboard'),
+    alerts.length>0&&h('div',null,alerts.map(function(a,i){return h('div',{key:i,className:'alert-banner'},h('span',{className:'ab-icon'},'⚠'),h('div',{className:'ab-msg'},a))})),
+    h('div',{className:'stats-grid'},
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'รายรับทั้งหมด'),h('div',{className:'val inc'},fmt(inc,curr)),h('div',{className:'delta'},txs.filter(function(t){return t.type==='income'}).length+' รายการ')),
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'รายจ่ายทั้งหมด'),h('div',{className:'val exp'},fmt(exp,curr)),h('div',{className:'delta'},txs.filter(function(t){return t.type==='expense'}).length+' รายการ')),
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'ยอดคงเหลือ'),h('div',{className:'val bal'},fmt(inc-exp,curr)),h('div',{className:'delta',style:{color:inc-exp>=0?'#00c9a7':'#ff5e7a'}},inc-exp>=0?'กำไร':'ขาดทุน'))
+    ),
+    h('div',{className:'chart-row'},
+      h('div',{className:'card'},
+        h('h3',null,'รายรับ-รายจ่าย 6 เดือนล่าสุด'),
+        h(RC.ResponsiveContainer,{width:'100%',height:170},
+          h(RC.BarChart,{data:Object.values(monthly),margin:{top:5,right:5,bottom:0,left:-15}},
+            h(RC.XAxis,{dataKey:'month',tick:{fill:'var(--text2)',fontSize:10},axisLine:false,tickLine:false}),
+            h(RC.YAxis,{tick:{fill:'var(--text2)',fontSize:10},axisLine:false,tickLine:false}),
+            h(RC.Tooltip,{content:h(CT)}),
+            h(RC.Bar,{dataKey:'income',name:'รายรับ',fill:'#00c9a7',radius:[4,4,0,0]}),
+            h(RC.Bar,{dataKey:'expense',name:'รายจ่าย',fill:'#ff5e7a',radius:[4,4,0,0]})
+          )
+        )
+      ),
+      h('div',{className:'card'},
+        h('h3',null,'สัดส่วนรายจ่าย'),
+        pieData.length>0?h(React.Fragment,null,
+          h(RC.ResponsiveContainer,{width:'100%',height:130},
+            h(RC.PieChart,null,
+              h(RC.Pie,{data:pieData,cx:'50%',cy:'50%',innerRadius:28,outerRadius:52,dataKey:'value'},pieData.map(function(_,i){return h(RC.Cell,{key:i,fill:COLORS[i%COLORS.length]})})),
+              h(RC.Tooltip,{formatter:function(v){return fmt(v,curr)},contentStyle:ttStyle})
+            )
+          ),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:'4px 8px'}},pieData.slice(0,5).map(function(d,i){return h('span',{key:i,style:{fontSize:10,color:'var(--text2)',display:'flex',alignItems:'center',gap:3}},h('span',{style:{width:6,height:6,borderRadius:2,background:COLORS[i%COLORS.length],display:'inline-block'}}),d.name)}))
+        ):h('div',{className:'empty'},'ยังไม่มีรายจ่าย')
+      )
+    ),
+    h('div',{className:'card'},
+      h('h3',null,'รายการล่าสุด'),
+      recent.length===0?h('div',{className:'empty'},'ยังไม่มีรายการ เริ่มบันทึกได้เลย!'):
+      h('div',{className:'tx-list'},recent.map(function(t){return h('div',{key:t.id,className:'tx-item'},
+        h('div',{className:'tx-dot '+(t.type==='income'?'inc':'exp')}),
+        h('div',{className:'tx-info'},h('div',{className:'tx-desc'},t.description||t.category),h('div',{className:'tx-meta'},fmtDate(t.date)+' • '+t.category)),
+        h('div',{className:'tx-amount '+(t.type==='income'?'inc':'exp')},(t.type==='income'?'+':'-')+fmt(t.amount,curr))
+      )}))
+    )
+  );
+}
+
+/* ── Transactions ─────────────────────────────── */
+function Transactions(p){
+  var s1=useState('expense'),type=s1[0],setType=s1[1];
+  var s2=useState(''),amount=s2[0],setAmount=s2[1];
+  var s3=useState(''),desc=s3[0],setDesc=s3[1];
+  var s4=useState(''),cat=s4[0],setCat=s4[1];
+  var s5=useState(today()),date=s5[0],setDate=s5[1];
+  var s6=useState('all'),filter=s6[0],setFilter=s6[1];
+  var s7=useState(''),search=s7[0],setSearch=s7[1];
+  var s8=useState(null),editId=s8[0],setEditId=s8[1];
+  var cats=type==='income'?CATS_INC:CATS_EXP;
+  function reset(){setAmount('');setDesc('');setCat('');setDate(today());setEditId(null)}
+  function save(){
+    if(!amount||isNaN(+amount)||+amount<=0){p.toast('ระบุจำนวนเงินให้ถูกต้อง','err');return}
+    if(!cat){p.toast('เลือกหมวดหมู่ด้วยนะ','err');return}
+    var tx={id:editId||uid(),type:type,amount:+amount,description:desc,category:cat,date:date};
+    var nl=editId?p.txs.map(function(t){return t.id===editId?tx:t}):[tx].concat(p.txs);
+    if(type==='expense'&&p.budgets[cat]>0){
+      var spent=nl.filter(function(t){return t.type==='expense'&&t.category===cat}).reduce(function(s,t){return s+t.amount},0);
+      if(spent>p.budgets[cat])p.toast('⚠ หมวด "'+cat+'" เกิน budget!','warn');
+      else if(spent/p.budgets[cat]>=0.8)p.toast('หมวด "'+cat+'" ใช้ไป '+Math.round(spent/p.budgets[cat]*100)+'%','warn');
+    }
+    p.setTxs(nl);p.toast(editId?'แก้ไขสำเร็จ':'บันทึกสำเร็จ');reset();
+  }
+  function edit(t){setType(t.type);setAmount(String(t.amount));setDesc(t.description||'');setCat(t.category);setDate(t.date);setEditId(t.id)}
+  function del(id){p.setTxs(p.txs.filter(function(t){return t.id!==id}));p.toast('ลบแล้ว')}
+  var filtered=p.txs.filter(function(t){return(filter==='all'||t.type===filter)&&(!search||(t.description||'').toLowerCase().includes(search.toLowerCase())||t.category.toLowerCase().includes(search.toLowerCase()))}).sort(function(a,b){return new Date(b.date)-new Date(a.date)});
+  return h('div',null,
+    h('div',{className:'page-title'},'บันทึกรายการ'),
+    h('div',{className:'add-form'},
+      h('div',{className:'form-title'},editId?'แก้ไขรายการ':'เพิ่มรายการใหม่'),
+      h('div',{className:'type-toggle'},
+        h('button',{className:'type-btn'+(type==='income'?' act-inc':''),onClick:function(){setType('income');setCat('')}},'+ รายรับ'),
+        h('button',{className:'type-btn'+(type==='expense'?' act-exp':''),onClick:function(){setType('expense');setCat('')}},'- รายจ่าย')
+      ),
+      h('div',{className:'form-row'},
+        h('div',{className:'field'},h('label',null,'จำนวนเงิน (฿ THB)'),h('input',{type:'number',placeholder:'0.00',value:amount,onChange:function(e){setAmount(e.target.value)}})),
+        h('div',{className:'field'},h('label',null,'หมวดหมู่'),h('select',{value:cat,onChange:function(e){setCat(e.target.value)}},h('option',{value:''},'เลือกหมวดหมู่...'),cats.map(function(c){return h('option',{key:c,value:c},c)})))
+      ),
+      h('div',{className:'form-row'},
+        h('div',{className:'field'},h('label',null,'รายละเอียด'),h('input',{type:'text',placeholder:'อธิบายรายการ...',value:desc,onChange:function(e){setDesc(e.target.value)}})),
+        h('div',{className:'field'},h('label',null,'วันที่'),h('input',{type:'date',value:date,onChange:function(e){setDate(e.target.value)}}))
+      ),
+      h('div',{style:{display:'flex',gap:'.6rem'}},
+        h('button',{className:'submit-btn',onClick:save,style:{flex:1}},editId?'บันทึกการแก้ไข':'เพิ่มรายการ'),
+        editId&&h('button',{className:'cancel-btn',onClick:reset},'ยกเลิก')
+      )
+    ),
+    h('div',{className:'filter-row'},
+      h('input',{type:'text',placeholder:'ค้นหา...',value:search,onChange:function(e){setSearch(e.target.value)},style:{flex:1}}),
+      h('select',{value:filter,onChange:function(e){setFilter(e.target.value)}},h('option',{value:'all'},'ทั้งหมด'),h('option',{value:'income'},'รายรับ'),h('option',{value:'expense'},'รายจ่าย'))
+    ),
+    h('div',{className:'card'},
+      h('h3',null,'รายการทั้งหมด ('+filtered.length+')'),
+      h('div',{className:'scrollarea'},
+        filtered.length===0?h('div',{className:'empty'},'ไม่พบรายการ'):
+        h('div',{className:'tx-list',style:{marginTop:'.5rem'}},filtered.map(function(t){return h('div',{key:t.id,className:'tx-item'},
+          h('div',{className:'tx-dot '+(t.type==='income'?'inc':'exp')}),
+          h('div',{className:'tx-info'},h('div',{className:'tx-desc'},t.description||t.category),h('div',{className:'tx-meta'},fmtDate(t.date)+' • ',h('span',{className:'badge '+(t.type==='income'?'inc':'exp')},t.category))),
+          h('div',{className:'tx-amount '+(t.type==='income'?'inc':'exp')},(t.type==='income'?'+':'-')+fmt(t.amount,p.curr)),
+          h('div',{className:'tx-actions'},h('button',{className:'abn',onClick:function(){edit(t)}},'แก้ไข'),h('button',{className:'abn del',onClick:function(){del(t.id)}},'ลบ'))
+        )}))
+      )
+    )
+  );
+}
+
+/* ── Budget ───────────────────────────────────── */
+function BudgetPage(p){
+  var s1=useState(''),sel=s1[0],setSel=s1[1];
+  var s2=useState(''),amt=s2[0],setAmt=s2[1];
+  var expMap=catMap(p.txs,'expense');
+  function save(){
+    if(!sel){p.toast('เลือกหมวดหมู่','err');return}
+    if(!amt||isNaN(+amt)||+amt<=0){p.toast('ระบุงบประมาณ','err');return}
+    p.setBudgets(function(prev){var n=Object.assign({},prev);n[sel]=+amt;return n});
+    p.toast('ตั้ง budget "'+sel+'" สำเร็จ');setSel('');setAmt('');
+  }
+  function del(cat){p.setBudgets(function(prev){var n=Object.assign({},prev);delete n[cat];return n});p.toast('ลบ budget "'+cat+'" แล้ว')}
+  return h('div',null,
+    h('div',{className:'page-title'},'ตั้งงบประมาณ (Budget)'),
+    h('div',{className:'add-form'},
+      h('div',{className:'form-title'},'เพิ่ม / แก้ไข Budget'),
+      h('div',{className:'form-row'},
+        h('div',{className:'field'},h('label',null,'หมวดหมู่รายจ่าย'),h('select',{value:sel,onChange:function(e){setSel(e.target.value)}},h('option',{value:''},'เลือก...'),CATS_EXP.map(function(c){return h('option',{key:c,value:c},c)}))),
+        h('div',{className:'field'},h('label',null,'งบประมาณ (฿ THB)'),h('input',{type:'number',placeholder:'0',value:amt,onChange:function(e){setAmt(e.target.value)}}))
+      ),
+      h('button',{className:'submit-btn',onClick:save},'บันทึก Budget')
+    ),
+    Object.keys(p.budgets).length>0?
+      h('div',{className:'card'},
+        h('h3',null,'Budget ที่ตั้งไว้'),
+        h('div',{className:'budget-grid'},Object.entries(p.budgets).map(function(e){
+          var cat=e[0],lim=e[1],spent=expMap[cat]||0,pct=Math.min(spent/lim*100,100);
+          var over=spent>lim,near=!over&&pct>=80;
+          var color=over?'#ff5e7a':near?'#f0b429':'#00c9a7';
+          return h('div',{key:cat,className:'bgt-item'},
+            h('div',{className:'bgt-label'},h('span',null,cat),h('button',{onClick:function(){del(cat)},style:{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',fontSize:12}},'✕')),
+            h('div',{className:'bgt-bar-bg'},h('div',{className:'bgt-bar',style:{width:pct+'%',background:color}})),
+            h('div',{className:'bgt-nums'},h('span',{style:{color:color}},fmt(spent,p.curr)+' / '+fmt(lim,p.curr)),h('span',{style:{color:color}},Math.round(pct)+'%'))
+          );
+        }))
+      ):h('div',{className:'card'},h('div',{className:'empty'},'ยังไม่มี budget ลองตั้งดูนะ!'))
+  );
+}
+
+/* ── Report ───────────────────────────────────── */
+function ReportPage(p){
+  var s1=useState('monthly'),view=s1[0],setView=s1[1];
+  var s2=useState(new Date().getFullYear()),yr=s2[0],setYr=s2[1];
+  var s3=useState(new Date().getMonth()),mo=s3[0],setMo=s3[1];
+  var years=[];p.txs.forEach(function(t){var y=new Date(t.date).getFullYear();if(years.indexOf(y)<0)years.push(y)});
+  years.sort(function(a,b){return b-a});if(years.indexOf(new Date().getFullYear())<0)years.unshift(new Date().getFullYear());
+  var mData=MONTHS.map(function(m,i){var t2=p.txs.filter(function(t){var d=new Date(t.date);return d.getFullYear()===yr&&d.getMonth()===i});return{month:m,income:t2.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0),expense:t2.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0)}});
+  var days=new Date(yr,mo+1,0).getDate(),dData=[];
+  for(var d=1;d<=days;d++){var dd=d;var t2=p.txs.filter(function(t){var dt=new Date(t.date);return dt.getFullYear()===yr&&dt.getMonth()===mo&&dt.getDate()===dd});dData.push({day:dd,income:t2.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0),expense:t2.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0)})}
+  var cMap={};p.txs.filter(function(t){return t.type==='expense'&&new Date(t.date).getFullYear()===yr&&(view==='monthly'||new Date(t.date).getMonth()===mo)}).forEach(function(t){cMap[t.category]=(cMap[t.category]||0)+t.amount});
+  var pie=Object.entries(cMap).map(function(e){return{name:e[0],value:e[1]}});
+  var data=view==='monthly'?mData:dData;
+  var tInc=data.reduce(function(s,d){return s+d.income},0),tExp=data.reduce(function(s,d){return s+d.expense},0);
+  var ttStyle={background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 12px',fontSize:11};
+  function CT(q){if(!q.active||!q.payload||!q.payload.length)return null;return h('div',{style:ttStyle},h('p',{style:{color:'var(--text2)',marginBottom:4}},q.label),q.payload.map(function(x,i){return h('p',{key:i,style:{color:x.color}},x.name+': '+fmt(x.value,p.curr))}))}
+  return h('div',null,
+    h('div',{className:'page-title'},'รายงาน'),
+    h('div',{style:{display:'flex',alignItems:'center',gap:'1rem',marginBottom:'1rem',flexWrap:'wrap'}},
+      h('div',{className:'tab-row'},h('button',{className:'tab'+(view==='monthly'?' active':''),onClick:function(){setView('monthly')}},'รายปี'),h('button',{className:'tab'+(view==='daily'?' active':''),onClick:function(){setView('daily')}},'รายเดือน')),
+      h('select',{value:yr,onChange:function(e){setYr(+e.target.value)},className:'currency-select'},years.map(function(y){return h('option',{key:y,value:y},y)})),
+      view==='daily'&&h('select',{value:mo,onChange:function(e){setMo(+e.target.value)},className:'currency-select'},MONTHS.map(function(m,i){return h('option',{key:i,value:i},m)}))
+    ),
+    h('div',{className:'stats-grid',style:{marginBottom:'1rem'}},
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'รายรับ'),h('div',{className:'val inc'},fmt(tInc,p.curr))),
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'รายจ่าย'),h('div',{className:'val exp'},fmt(tExp,p.curr))),
+      h('div',{className:'stat-card'},h('div',{className:'lbl'},'ยอดสุทธิ'),h('div',{className:'val '+(tInc-tExp>=0?'inc':'exp')},fmt(tInc-tExp,p.curr)))
+    ),
+    h('div',{className:'report-grid'},
+      h('div',{className:'card'},
+        h('h3',null,view==='monthly'?'รายรับ-จ่าย รายเดือน':'รายรับ-จ่าย รายวัน'),
+        h(RC.ResponsiveContainer,{width:'100%',height:180},
+          h(RC.AreaChart,{data:data,margin:{top:5,right:5,bottom:0,left:-15}},
+            h(RC.XAxis,{dataKey:view==='monthly'?'month':'day',tick:{fill:'var(--text2)',fontSize:10},axisLine:false,tickLine:false}),
+            h(RC.YAxis,{tick:{fill:'var(--text2)',fontSize:10},axisLine:false,tickLine:false}),
+            h(RC.Tooltip,{content:h(CT)}),
+            h(RC.Area,{type:'monotone',dataKey:'income',name:'รายรับ',stroke:'#00c9a7',fill:'rgba(0,201,167,.15)',strokeWidth:2}),
+            h(RC.Area,{type:'monotone',dataKey:'expense',name:'รายจ่าย',stroke:'#ff5e7a',fill:'rgba(255,94,122,.15)',strokeWidth:2})
+          )
+        )
+      ),
+      h('div',{className:'card'},
+        h('h3',null,'หมวดหมู่รายจ่าย'),
+        pie.length>0?h(React.Fragment,null,
+          h(RC.ResponsiveContainer,{width:'100%',height:180},h(RC.PieChart,null,h(RC.Pie,{data:pie,cx:'50%',cy:'50%',outerRadius:65,dataKey:'value'},pie.map(function(_,i){return h(RC.Cell,{key:i,fill:COLORS[i%COLORS.length]})})),h(RC.Tooltip,{formatter:function(v){return fmt(v,p.curr)},contentStyle:ttStyle}))),
+          h('div',{style:{display:'flex',flexWrap:'wrap',gap:'4px 8px',marginTop:6}},Object.keys(cMap).slice(0,6).map(function(c,i){return h('span',{key:i,style:{fontSize:10,color:'var(--text2)',display:'flex',alignItems:'center',gap:3}},h('span',{style:{width:6,height:6,borderRadius:2,background:COLORS[i%COLORS.length],display:'inline-block'}}),c)}))
+        ):h('div',{className:'empty'},'ไม่มีรายจ่าย')
+      )
+    ),
+    h('div',{className:'card'},
+      h('h3',null,'สรุปตามหมวดหมู่'),
+      Object.entries(cMap).length===0?h('div',{className:'empty'},'ไม่มีข้อมูล'):
+      h('div',{style:{display:'flex',flexDirection:'column',gap:'.4rem'}},Object.entries(cMap).sort(function(a,b){return b[1]-a[1]}).map(function(e,i){return h('div',{key:e[0],style:{display:'flex',alignItems:'center',gap:10,padding:'.5rem',background:'var(--bg3)',borderRadius:8}},h('span',{style:{width:8,height:8,borderRadius:2,background:COLORS[i%COLORS.length],flexShrink:0}}),h('span',{style:{flex:1,fontSize:'.83rem',color:'var(--text1)'}},e[0]),h('span',{style:{fontFamily:"'DM Mono',monospace",fontSize:'.82rem',color:'#ff5e7a'}},fmt(e[1],p.curr)))}))
+    )
+  );
+}
+
+/* ── Export ───────────────────────────────────── */
+function ExportPage(p){
+  function csv(){
+    var rate=CURRENCIES[p.curr].rate,rows=p.txs.map(function(t){return[t.id,t.type,t.amount,(t.amount*rate).toFixed(2),'"'+t.category+'"','"'+(t.description||'')+'"',t.date].join(',')}).join('\n');
+    dl(new Blob(['\uFEFFid,type,amount_thb,amount_'+p.curr+',category,description,date\n'+rows],{type:'text/csv;charset=utf-8'}),'finbook_'+today()+'.csv');
+    p.toast('Export CSV สำเร็จ!');
+  }
+  function xml(){
+    var rate=CURRENCIES[p.curr].rate,items=p.txs.map(function(t){return'  <transaction>\n    <id>'+t.id+'</id>\n    <type>'+t.type+'</type>\n    <amount_thb>'+t.amount+'</amount_thb>\n    <amount_'+p.curr+'>'+(t.amount*rate).toFixed(2)+'</amount_'+p.curr+'>\n    <category>'+t.category+'</category>\n    <description>'+(t.description||'')+'</description>\n    <date>'+t.date+'</date>\n  </transaction>'}).join('\n');
+    dl(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n<transactions user="'+p.user.name+'" currency="'+p.curr+'" exported="'+new Date().toISOString()+'">\n'+items+'\n</transactions>'],{type:'application/xml'}),'finbook_'+today()+'.xml');
+    p.toast('Export XML สำเร็จ!');
+  }
+  var inc=p.txs.filter(function(t){return t.type==='income'}).reduce(function(s,t){return s+t.amount},0);
+  var exp=p.txs.filter(function(t){return t.type==='expense'}).reduce(function(s,t){return s+t.amount},0);
+  return h('div',null,
+    h('div',{className:'page-title'},'Export รายงาน'),
+    h('div',{className:'card',style:{marginBottom:'1.25rem'}},
+      h('h3',null,'สรุปข้อมูล'),
+      h('div',{style:{display:'flex',gap:'1.5rem',marginTop:'1rem',flexWrap:'wrap'}},
+        h('div',null,h('div',{style:{fontSize:'.75rem',color:'var(--text2)'}},'รายการ'),h('div',{style:{fontFamily:"'DM Mono',monospace",fontSize:'1.3rem',color:'var(--text1)'}},p.txs.length+' รายการ')),
+        h('div',null,h('div',{style:{fontSize:'.75rem',color:'var(--text2)'}},'รายรับ'),h('div',{style:{fontFamily:"'DM Mono',monospace",fontSize:'1.3rem',color:'#00c9a7'}},fmt(inc,p.curr))),
+        h('div',null,h('div',{style:{fontSize:'.75rem',color:'var(--text2)'}},'รายจ่าย'),h('div',{style:{fontFamily:"'DM Mono',monospace",fontSize:'1.3rem',color:'#ff5e7a'}},fmt(exp,p.curr))),
+        h('div',null,h('div',{style:{fontSize:'.75rem',color:'var(--text2)'}},'สกุลเงิน'),h('span',{className:'curr-badge',style:{marginTop:4,display:'inline-flex'}},p.curr))
+      )
+    ),
+    h('div',{className:'export-grid'},
+      h('div',{className:'export-card'},h('div',{className:'ex-icon'},'📊'),h('h3',null,'CSV Format'),h('p',null,'เหมาะสำหรับ Excel, Google Sheets รองรับหลายสกุลเงิน'),h('button',{className:'export-btn csv',onClick:csv},'Download .csv')),
+      h('div',{className:'export-card'},h('div',{className:'ex-icon'},'📄'),h('h3',null,'XML Format'),h('p',null,'เหมาะสำหรับ integrate กับระบบอื่นหรือ import ข้อมูล'),h('button',{className:'export-btn xml',onClick:xml},'Download .xml'))
+    )
+  );
+}
+
+/* ── Backup ───────────────────────────────────── */
+function BackupPage(p){
+  var ref=useRef(null);
+  function backup(){
+    dl(new Blob([JSON.stringify({version:'2.0',exported:new Date().toISOString(),transactions:p.txs},null,2)],{type:'application/json'}),'finbook_backup_'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)+'.json');
+    p.toast('Backup สำเร็จ!');
+  }
+  function restore(e){
+    var f=e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){try{var d=JSON.parse(ev.target.result);if(d.transactions&&Array.isArray(d.transactions)){p.setTxs(d.transactions);p.toast('Restore สำเร็จ! '+d.transactions.length+' รายการ')}else p.toast('ไฟล์ไม่ถูกต้อง','err')}catch(e){p.toast('อ่านไฟล์ไม่ได้','err')}};
+    r.readAsText(f);e.target.value='';
+  }
+  function clear(){if(confirm('ยืนยันลบข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้')){p.setTxs([]);p.toast('ลบข้อมูลทั้งหมดแล้ว')}}
+  return h('div',null,
+    h('div',{className:'page-title'},'Backup & Restore'),
+    h('div',{className:'bk-card'},h('h3',null,'Backup ข้อมูล'),h('p',null,'บันทึก '+p.txs.length+' รายการเป็นไฟล์ JSON สำรองไว้ในเครื่องของคุณ'),h('button',{className:'bk-btn primary',onClick:backup},'⬇  Download Backup')),
+    h('div',{className:'bk-card'},
+      h('h3',null,'Restore ข้อมูล'),
+      h('p',null,'นำเข้าข้อมูลจากไฟล์ backup ข้อมูลปัจจุบันจะถูกแทนที่'),
+      h('button',{className:'bk-btn secondary',onClick:function(){ref.current.click()}},'⬆  เลือกไฟล์ Backup'),
+      h('input',{type:'file',accept:'.json',ref:ref,style:{display:'none'},onChange:restore}),
+      h('div',{className:'drop-zone',onClick:function(){ref.current.click()}},h('p',null,'คลิกหรือลากไฟล์ .json มาวางที่นี่'))
+    ),
+    h('div',{className:'bk-card'},h('h3',{style:{color:'#ff5e7a'}},'ล้างข้อมูลทั้งหมด'),h('p',null,'ลบรายการทั้งหมด ไม่สามารถกู้คืนได้ กรุณา backup ก่อน'),h('button',{className:'bk-btn danger',onClick:clear},'🗑  ลบข้อมูลทั้งหมด'))
+  );
+}
+
+/* ── Settings ─────────────────────────────────── */
+function SettingsPage(p){
+  function row(label,sub,ctrl){return h('div',{className:'setting-row'},h('div',null,h('div',{className:'setting-label'},label),sub&&h('div',{className:'setting-sub'},sub)),ctrl)}
+  function tog(checked,fn){return h('label',{className:'toggle'},h('input',{type:'checkbox',checked:checked,onChange:fn}),h('span',{className:'toggle-slider'}))}
+  return h('div',null,
+    h('div',{className:'page-title'},'ตั้งค่า'),
+    h('div',{className:'settings-sec'},
+      h('h3',null,'การแสดงผล'),
+      row('Dark / Light Mode',p.isDark?'Dark mode เปิดอยู่':'Light mode เปิดอยู่',tog(p.isDark,p.toggleTheme)),
+      row('สกุลเงิน','ข้อมูลเก็บเป็น THB แปลงเพื่อแสดงผล',h('select',{value:p.curr,onChange:function(e){p.setCurr(e.target.value)},className:'currency-select'},Object.entries(CURRENCIES).map(function(e){return h('option',{key:e[0],value:e[0]},e[1].name)})))
+    ),
+    h('div',{className:'settings-sec'},
+      h('h3',null,'การแจ้งเตือน'),
+      row('แจ้งเตือนเมื่อใกล้เกิน Budget','แจ้งเตือนเมื่อใช้เกิน 80%',tog(p.budgetAlert,function(e){p.setBudgetAlert(e.target.checked)})),
+      row('Auto Backup เมื่อ Logout','ดาวน์โหลด backup อัตโนมัติก่อน logout',tog(p.autoBackup,function(e){p.setAutoBackup(e.target.checked)}))
+    ),
+    h('div',{className:'settings-sec'},
+      h('h3',null,'อัตราแลกเปลี่ยน (ประมาณการ)'),
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'.5rem',marginTop:'.5rem'}},Object.entries(CURRENCIES).map(function(e){return h('div',{key:e[0],style:{background:'var(--bg3)',borderRadius:8,padding:'.6rem .8rem'}},h('div',{className:'curr-badge',style:{marginBottom:4}},e[0]),h('div',{style:{fontSize:'.82rem',color:'var(--text2)',fontFamily:"'DM Mono',monospace"}},'1 ฿ = '+e[1].sym+e[1].rate))}))
+    ),
+    h('div',{className:'settings-sec'},h('h3',null,'เกี่ยวกับ'),h('div',{style:{fontSize:'.85rem',color:'var(--text2)',lineHeight:1.8}},h('p',null,'FinanceBook v2.0'),h('p',null,'ข้อมูลเก็บใน localStorage บนเบราว์เซอร์ของคุณ'),h('p',null,'ไม่มีการส่งข้อมูลออกภายนอก')))
+  );
+}
+
+/* ── App ──────────────────────────────────────── */
+function App(){
+  var u=useLs('fb_user',null),user=u[0],setUser=u[1];
+  var t=useLs('fb_txs',[]),txs=t[0],setTxs=t[1];
+  var b=useLs('fb_budgets',{}),budgets=b[0],setBudgets=b[1];
+  var c=useLs('fb_curr','THB'),curr=c[0],setCurr=c[1];
+  var dk=useLs('fb_dark',true),isDark=dk[0],setIsDark=dk[1];
+  var ba=useLs('fb_balert',true),budgetAlert=ba[0],setBudgetAlert=ba[1];
+  var ab=useLs('fb_autobk',true),autoBackup=ab[0],setAutoBackup=ab[1];
+  var pg=useState('dashboard'),page=pg[0],setPage=pg[1];
+  var ts=useState(null),toast=ts[0],setToast=ts[1];
+
+  useEffect(function(){document.body.className=isDark?'dark':'light'},[isDark]);
+
+  function toggleTheme(){setIsDark(function(p){return!p})}
+  function showToast(msg,type){setToast({msg:msg,type:type||'ok',k:Date.now()})}
+
+  var expMap=catMap(txs,'expense');
+  var alertCnt=Object.entries(budgets).filter(function(e){return e[1]>0&&(expMap[e[0]]||0)>=e[1]*0.8}).length;
+
+  function logout(){
+    if(autoBackup&&txs.length>0){
+      dl(new Blob([JSON.stringify({version:'2.0',exported:new Date().toISOString(),transactions:txs},null,2)],{type:'application/json'}),'finbook_auto_backup_'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)+'.json');
+      showToast('Auto-backup สำเร็จ กำลัง logout...');
+      setTimeout(function(){setUser(null);setPage('dashboard')},1500);
+    }else{setUser(null);setPage('dashboard')}
+  }
+
+  if(!user){
+    return h(React.Fragment,null,
+      h(LoginPage,{onLogin:function(u){setUser(u);setPage('dashboard')},isDark:isDark,toggleTheme:toggleTheme}),
+      toast&&h(Toast,{msg:toast.msg,type:toast.type,key:toast.k,onDone:function(){setToast(null)}})
+    );
+  }
+
+  var nav=[
+    {id:'dashboard',label:'Dashboard',icon:'◈'},
+    {id:'transactions',label:'รายการ',icon:'≡'},
+    {id:'budget',label:'Budget',icon:'◎',alert:alertCnt},
+    {id:'report',label:'รายงาน',icon:'▦'},
+    {id:'export',label:'Export',icon:'⬇'},
+    {id:'backup',label:'Backup',icon:'☁'},
+    {id:'settings',label:'ตั้งค่า',icon:'⚙'},
+  ];
+
+  var cp={txs:txs,curr:curr,toast:showToast};
+
+  return h('div',{className:'layout'},
+    h('aside',{className:'sidebar'},
+      h('div',{className:'sidebar-logo'},
+        h('div',{className:'avatar'},user.avatar||user.name[0]),
+        h('div',{className:'brand'},'FinanceBook'),
+        h('div',{className:'uname'},user.name),
+        h('span',{className:'curr-badge',style:{marginTop:6}},curr)
+      ),
+      nav.map(function(n){return h('div',{key:n.id,className:'nav-item'+(page===n.id?' active':''),onClick:function(){setPage(n.id)}},
+        h('span',{style:{fontSize:13}},n.icon),' ',n.label,
+        n.alert>0&&h('span',{className:'notif-dot'})
+      )}),
+      h('div',{className:'sidebar-bottom'},
+        h('button',{className:'theme-btn',onClick:toggleTheme},isDark?'☀  Light mode':'🌙  Dark mode'),
+        h('button',{className:'logout-btn',onClick:logout},'⏻  Logout')
+      )
+    ),
+    h('main',{className:'main'},
+      page==='dashboard'   &&h(Dashboard,   Object.assign({},cp,{budgets:budgets})),
+      page==='transactions'&&h(Transactions, Object.assign({},cp,{setTxs:setTxs,budgets:budgets})),
+      page==='budget'      &&h(BudgetPage,   Object.assign({},cp,{budgets:budgets,setBudgets:setBudgets})),
+      page==='report'      &&h(ReportPage,   cp),
+      page==='export'      &&h(ExportPage,   Object.assign({},cp,{user:user})),
+      page==='backup'      &&h(BackupPage,   {txs:txs,setTxs:setTxs,toast:showToast}),
+      page==='settings'    &&h(SettingsPage, {curr:curr,setCurr:setCurr,isDark:isDark,toggleTheme:toggleTheme,budgetAlert:budgetAlert,setBudgetAlert:setBudgetAlert,autoBackup:autoBackup,setAutoBackup:setAutoBackup})
+    ),
+    toast&&h(Toast,{msg:toast.msg,type:toast.type,key:toast.k,onDone:function(){setToast(null)}})
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
